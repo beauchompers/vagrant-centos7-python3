@@ -1,0 +1,56 @@
+## playbook to install packages etc for Python3 sandbox
+---
+- hosts: all
+  tasks:
+    - name: update sudoers file with /usr/local/bin
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin/'
+        line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin'
+      become: yes
+
+    - name: install latest yum updates
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+
+    - name: install development tools group
+      yum:
+        name: "@Development tools"
+        state: present
+      become: yes
+
+    - name: install additional required packages for python3 dev environment
+      yum:
+        name: "{{ item.name }}"
+        state: present
+      become: yes
+      ignore_errors: true
+      with_items:
+        - { name: 'lsof' }
+        - { name: 'wget' }
+        - { name: 'words' }
+        - { name: 'vim-enhanced' }
+        - { name: 'which' }
+        - { name: 'libffi-devel' }
+        - { name: 'zlib-devel' }
+        - { name: 'bzip2-devel' }
+        - { name: 'openssl-devel' }
+        - { name: 'ncurses-devel' }
+        - { name: 'sqlite-devel' }
+        - { name: 'readline-devel' }
+        - { name: 'tk-devel' }
+        - { name: 'gdm-devel' }
+        - { name: 'libdb-devel' }
+        - { name: 'libpcap-devel' }
+        - { name: 'xz-devel' }
+        - { name: 'expat-devel' }
+        - { name: '/vagrant/python/pgdg-centos96-9.6-3.noarch.rpm' }
+        - { name: 'postgresql96'}
+
+    - name: add vagrant folder to path
+      copy:
+        dest: /etc/profile.d/vagrantscripts.sh
+        content: 'PATH=$PATH:/vagrant/python'
+      become: yes
